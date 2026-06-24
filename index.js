@@ -10,7 +10,6 @@ const noblox = require('noblox.js');
 const express = require('express');
 
 // ==================== SECURED CONFIGURATION ====================
-// These look for variables on Render. No secrets are written here anymore!
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const ROBLOX_COOKIE = process.env.ROBLOX_COOKIE;
 
@@ -184,7 +183,8 @@ client.on('messageCreate', async message => {
     if (message.author.bot || !message.content.toLowerCase().startsWith(PREFIX)) return;
 
     const member = message.member;
-    const requiredRole = message.guild.roles.roles.cache.get(REQUIRED_ROLE_ID);
+    // FIXED: Removed the extra '.roles' typo here!
+    const requiredRole = message.guild.roles.cache.get(REQUIRED_ROLE_ID);
     if (!requiredRole || !member.roles.cache.some(role => role.position >= requiredRole.position)) {
         return message.reply('❌ You do not have permission to use this command.');
     }
