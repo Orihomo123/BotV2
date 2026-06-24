@@ -7,17 +7,17 @@ const {
     Routes 
 } = require('discord.js');
 const noblox = require('noblox.js');
-const express = require('express');
+const express = require('express'); // Added for Render uptime
 
-// ==================== SECURED CONFIGURATION ====================
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const ROBLOX_COOKIE = process.env.ROBLOX_COOKIE;
+// ==================== CONFIGURATION ====================
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN || "PASTE_YOUR_DISCORD_BOT_TOKEN_HERE";
+const ROBLOX_COOKIE = process.env.ROBLOX_COOKIE || "PASTE_YOUR_ROBLOX_COOKIE_HERE";
 
 const PREFIX = ".rank";
 const GROUP_ID = 243948679;
 const REQUIRED_ROLE_ID = '1482918985052717247'; 
 const LOG_CHANNEL_ID = '1519338982553686277'; 
-// ===============================================================
+// =======================================================
 
 // --- KEEP-ALIVE WEB SERVER FOR RENDER ---
 const app = express();
@@ -57,11 +57,6 @@ let robloxAuthenticated = false;
 client.once('ready', async () => {
     console.log(`✅ Connected to Discord as ${client.user.tag}!`);
     
-    if (!ROBLOX_COOKIE) {
-        console.error('❌ ERROR: ROBLOX_COOKIE environment variable is missing!');
-        return;
-    }
-
     try {
         await noblox.setCookie(ROBLOX_COOKIE);
         const currentUser = await noblox.getAuthenticatedUser();
@@ -97,11 +92,6 @@ client.once('ready', async () => {
             ))
             .addStringOption(option => option.setName('proof').setDescription('Paste an image link/URL for proof').setRequired(true))
     ];
-
-    if (!DISCORD_TOKEN) {
-        console.error('❌ ERROR: DISCORD_TOKEN environment variable is missing!');
-        return;
-    }
 
     const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
     try {
@@ -168,7 +158,7 @@ client.on('interactionCreate', async interaction => {
 
             await interaction.editReply({ embeds: [embed] });
 
-            const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+            const logChannel = message.guild.channels.cache.get(LOG_CHANNEL_ID);
             if (logChannel) await logChannel.send({ embeds: [embed] });
 
         } catch (error) {
@@ -183,7 +173,6 @@ client.on('messageCreate', async message => {
     if (message.author.bot || !message.content.toLowerCase().startsWith(PREFIX)) return;
 
     const member = message.member;
-    // FIXED: Removed the extra '.roles' typo here!
     const requiredRole = message.guild.roles.cache.get(REQUIRED_ROLE_ID);
     if (!requiredRole || !member.roles.cache.some(role => role.position >= requiredRole.position)) {
         return message.reply('❌ You do not have permission to use this command.');
@@ -247,8 +236,4 @@ client.on('messageCreate', async message => {
     }
 });
 
-if (DISCORD_TOKEN) {
-    client.login(DISCORD_TOKEN);
-} else {
-    console.error("❌ ERROR: Cannot run client.login() because DISCORD_TOKEN is empty.");
-}
+client.login(DISCORD_TOKEN);
